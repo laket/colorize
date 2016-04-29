@@ -32,7 +32,7 @@ tf.app.flags.DEFINE_integer('image_width', 640,
                             """width of image""")
 tf.app.flags.DEFINE_integer('image_height', 360,
                             """width of image""")
-tf.app.flags.DEFINE_integer('batch_size', 16,
+tf.app.flags.DEFINE_integer('batch_size', 4,
                             """minibatch size""")
 
 
@@ -72,7 +72,7 @@ def read_dirs(list_gray_dir, list_color_dir=None, is_train=False):
         color_image = _process_each_list(list_color_dir, is_color=True)
 
     num_preprocess_threads = 4
-    min_queue_examples = 64
+    min_queue_examples = 16
     batch_size = FLAGS.batch_size
 
     if is_train:
