@@ -46,7 +46,7 @@ def read_dirs(list_gray_dir, list_color_dir=None, is_train=False):
     :param list list_gray_dir: list of input directories. Each directory has grayscale image files.
     :pram bool is_shuffle: whether you need shuffle tensor or not
     :return: tensor
-    :rtype: Tensor
+    :rtype: tuple(Tensor) or Tensor
     """
     if is_train and list_color_dir is None:
         raise ValueError("requires list_color_dir in train")
