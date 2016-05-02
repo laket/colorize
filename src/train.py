@@ -120,7 +120,7 @@ def get_train_op(total_loss, global_step):
 
 
 def train():
-    with tf.Graph().as_default(), tf.device("/cpu:0"):
+    with tf.Graph().as_default():
       global_step = tf.Variable(0, trainable=False)
 
       dirs_gray, dirs_color = make_data_directory_list()
@@ -147,7 +147,7 @@ def train():
 
       for step in xrange(FLAGS.max_steps):
           start_time = time.time()
-          value_raw_loss, value_total_loss = sess.run([raw_loss, total_loss])
+          _,value_raw_loss, value_total_loss = sess.run([train_op,raw_loss, total_loss])
           duration = time.time() - start_time
 
 

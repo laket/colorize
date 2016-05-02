@@ -43,7 +43,7 @@ def layer(inputs, kernel_size, channel, stride):
     :return: output of layer
     :rtype: Tensor
     """
-    wd = 1e-5
+    wd = 1e-4
     input_depth = inputs.get_shape()[-1]
 
     kernel = variable('weights', shape=[kernel_size, kernel_size, input_depth, channel],
@@ -116,7 +116,7 @@ def loss(inferenced, original):
     :return: the loss value.
     :rtype: Tensor
     """
-    loss = tf.nn.l2_loss(original - inferenced)
+    loss = tf.nn.l2_loss(original - inferenced) / (FLAGS.image_height*FLAGS.image_width*3)
     tf.add_to_collection('losses', loss)
 
     total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
