@@ -82,11 +82,13 @@ def inference(images):
 
 
     # 1/2 ** 3
-    for idx_layer, channel in zip([2, 3, 4], [64, 64, 128]):
+    for idx_layer, channel in zip([2, 3, 4], [64, 64, 64]):
+    #for idx_layer, channel in zip([2, 3], [64, 64]):
         layer_name = "layer{}".format(idx_layer)
 
         with tf.variable_scope(layer_name) as scope:
-            outputs = layer(inputs, kernel_size=3, channel=channel, stride=1)
+            #outputs = layer(inputs, kernel_size=3, channel=channel, stride=1)
+            outputs = layer(inputs, kernel_size=3, channel=channel, stride=2)
             layer_features = tf.image.resize_images(outputs, FLAGS.image_height, FLAGS.image_width)
             features.append(layer_features)
 
@@ -120,12 +122,11 @@ def loss(inferenced, original):
     tf.add_to_collection('losses', loss)
 
     total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
-    _add_loss_summaries(loss, total_loss)
 
     return loss, total_loss
 
 
-def _add_loss_summaries(raw_loss, total_loss):
+def add_loss_summaries(raw_loss, total_loss):
     """
     Add summaries for losses
 
@@ -137,7 +138,7 @@ def _add_loss_summaries(raw_loss, total_loss):
     :return: op for generating moving averages of losses.
     """
 
-    loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
+    loss_averages = tf.train.ExponentialMovingAverage(0.95, name='avg')
     losses = tf.get_collection('losses')
     loss_averages_op = loss_averages.apply([raw_loss, total_loss])
 

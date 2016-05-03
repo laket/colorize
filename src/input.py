@@ -32,7 +32,7 @@ tf.app.flags.DEFINE_integer('image_width', 640,
                             """width of image""")
 tf.app.flags.DEFINE_integer('image_height', 360,
                             """width of image""")
-tf.app.flags.DEFINE_integer('batch_size', 2,
+tf.app.flags.DEFINE_integer('batch_size', 3,
                             """minibatch size""")
 
 

@@ -44,7 +44,7 @@ tf.app.flags.DEFINE_boolean('log_device_placement', False,
 
 
 ########  optimization parameters #############
-tf.app.flags.DEFINE_float('lr', 0.1,
+tf.app.flags.DEFINE_float('lr', 0.001,
                           "initial learning rate")
 
 #NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 8770
@@ -54,9 +54,6 @@ tf.app.flags.DEFINE_integer('decay_steps', 20000,
                         "learning rate decay steps")
 tf.app.flags.DEFINE_float('decay', 0.1,
                         "learning rate decay factor")
-
-# Constants describing the training process.
-MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 
 def make_data_directory_list():
     """
@@ -73,7 +70,7 @@ def make_data_directory_list():
     return dirs_gray, dirs_color
 
 
-def get_train_op(total_loss, global_step):
+def get_train_op(raw_loss, total_loss, global_step):
     """
     gets train operator
     Create an optimizer and apply to all trainable variables. Add moving
@@ -92,9 +89,11 @@ def get_train_op(total_loss, global_step):
                                     staircase=True)
     tf.scalar_summary('learning_rate', lr)
 
+
+    loss_average_op = model.add_loss_summaries(raw_loss, total_loss) 
     # Compute gradients.
-    with tf.control_dependencies([total_loss]):
-        opt = tf.train.GradientDescentOptimizer(lr)
+    with tf.control_dependencies([total_loss, loss_average_op]):
+        opt = tf.train.MomentumOptimizer(lr, momentum=0.95)
         grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
@@ -109,18 +108,14 @@ def get_train_op(total_loss, global_step):
         if grad is not None:
             tf.histogram_summary(var.op.name + '/gradients', grad)
 
-    # Track the moving averages of all trainable variables.
-    variable_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)
-    variables_averages_op = variable_averages.apply(tf.trainable_variables())
-
-    with tf.control_dependencies([apply_gradient_op, variables_averages_op]):
+    with tf.control_dependencies([apply_gradient_op]):
         train_op = tf.no_op(name='train')
 
     return train_op
 
 
 def train():
-    with tf.Graph().as_default():
+    with tf.Graph().as_default(), tf.device("/cpu:0"):
       global_step = tf.Variable(0, trainable=False)
 
       dirs_gray, dirs_color = make_data_directory_list()
@@ -129,7 +124,8 @@ def train():
       inferenced = model.inference(gray_images)
       raw_loss, total_loss = model.loss(inferenced, color_images)
 
-      train_op = get_train_op(total_loss, global_step)
+
+      train_op = get_train_op(raw_loss, total_loss, global_step)
 
       summary_op = tf.merge_all_summaries()
       saver = tf.train.Saver(tf.all_variables())
@@ -147,7 +143,7 @@ def train():
 
       for step in xrange(FLAGS.max_steps):
           start_time = time.time()
-          _,value_raw_loss, value_total_loss = sess.run([train_op,raw_loss, total_loss])
+          _, value_raw_loss, value_total_loss = sess.run([train_op, raw_loss, total_loss])
           duration = time.time() - start_time
 
 
