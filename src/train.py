@@ -115,7 +115,7 @@ def get_train_op(raw_loss, total_loss, global_step):
 
 
 def train():
-    with tf.Graph().as_default(), tf.device("/cpu:0"):
+    with tf.Graph().as_default(), tf.device("/gpu:0"):
       global_step = tf.Variable(0, trainable=False)
 
       dirs_gray, dirs_color = make_data_directory_list()
@@ -133,6 +133,7 @@ def train():
       init = tf.initialize_all_variables()
 
       sess = tf.Session(config=tf.ConfigProto(
+          allow_soft_placement=True,
           log_device_placement=FLAGS.log_device_placement))
       sess.run(init)
 

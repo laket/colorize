@@ -87,8 +87,8 @@ def inference(images):
         layer_name = "layer{}".format(idx_layer)
 
         with tf.variable_scope(layer_name) as scope:
-            #outputs = layer(inputs, kernel_size=3, channel=channel, stride=1)
-            outputs = layer(inputs, kernel_size=3, channel=channel, stride=2)
+            outputs = layer(inputs, kernel_size=3, channel=channel, stride=1)
+            #outputs = layer(inputs, kernel_size=3, channel=channel, stride=2)
             layer_features = tf.image.resize_images(outputs, FLAGS.image_height, FLAGS.image_width)
             features.append(layer_features)
 
