@@ -19,6 +19,7 @@
 from datetime import datetime
 import os
 import time
+import sys
 
 import numpy as np
 import tensorflow as tf
@@ -37,6 +38,9 @@ tf.app.flags.DEFINE_string("list_train", "../data/list_train.txt",
 
 tf.app.flags.DEFINE_string('train_dir', '../events',
                            """Directory where to write event logs """)
+tf.app.flags.DEFINE_string('checkpoint_dir', '../events',
+                           """Directory where to read model checkpoints.""")
+
 tf.app.flags.DEFINE_integer('max_steps', 1000000,
                             """Number of batches to run.""")
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
@@ -126,9 +130,10 @@ def train():
 
 
       train_op = get_train_op(raw_loss, total_loss, global_step)
-
       summary_op = tf.merge_all_summaries()
-      saver = tf.train.Saver(tf.all_variables())
+      
+      #saver = tf.train.Saver(tf.all_variables())
+      saver = tf.train.Saver(tf.trainable_variables())  
 
       init = tf.initialize_all_variables()
 
@@ -136,6 +141,12 @@ def train():
           allow_soft_placement=True,
           log_device_placement=FLAGS.log_device_placement))
       sess.run(init)
+
+      ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
+
+      if ckpt and ckpt.model_checkpoint_path:
+          print "restore from {}".format(ckpt.model_checkpoint_path)
+          saver.restore(sess, ckpt.model_checkpoint_path)
 
       # Start the queue runners.
       tf.train.start_queue_runners(sess=sess)

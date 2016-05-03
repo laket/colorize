@@ -39,7 +39,7 @@ tf.app.flags.DEFINE_string("dir_out", "../output",
 tf.app.flags.DEFINE_string("list_test", "../data/list_test.txt",
                            "directory list of train set")
 
-tf.app.flags.DEFINE_string('checkpoint_dir', '/tmp/cifar10_train',
+tf.app.flags.DEFINE_string('checkpoint_dir', '../events',
                            """Directory where to read model checkpoints.""")
 
 # Constants describing the training process.

@@ -118,7 +118,9 @@ def loss(inferenced, original):
     :return: the loss value.
     :rtype: Tensor
     """
-    loss = tf.nn.l2_loss(original - inferenced) / (FLAGS.image_height*FLAGS.image_width*3)
+    loss = tf.reduce_mean(tf.square(original - inferenced), name="raw_loss")
+    #loss = tf.nn.l2_loss(original - inferenced) / (FLAGS.image_height*FLAGS.image_width*3)
+    
     tf.add_to_collection('losses', loss)
 
     total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
