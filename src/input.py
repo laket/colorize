@@ -61,7 +61,7 @@ def read_dirs(list_gray_dir, list_color_dir=None, is_train=False):
 
             images += new_images
 
-        queue_images = tf.train.string_input_producer(images, shuffle=False, name="image_queue")
+        queue_images = tf.train.string_input_producer(images, shuffle=is_train, name="image_queue")
         image = read_image(queue_images, is_color)
         processed_image = preprocess_image(image)
 
@@ -72,7 +72,7 @@ def read_dirs(list_gray_dir, list_color_dir=None, is_train=False):
         color_image = _process_each_list(list_color_dir, is_color=True)
 
     num_preprocess_threads = 4
-    min_queue_examples = 16
+    min_queue_examples = 8
     batch_size = FLAGS.batch_size
 
     if is_train:
@@ -85,12 +85,11 @@ def read_dirs(list_gray_dir, list_color_dir=None, is_train=False):
         color_image = tf.slice(flipped_image, [0, 0, 1], [FLAGS.image_height, FLAGS.image_width, 3])
 
 
-        gray_images, color_images = tf.train.shuffle_batch(
+        gray_images, color_images = tf.train.batch(
             [gray_image, color_image],
             batch_size=batch_size,
             num_threads=num_preprocess_threads,
-            capacity=min_queue_examples + 3 * batch_size,
-            min_after_dequeue=min_queue_examples)
+            capacity=min_queue_examples + 3 * batch_size)
 
         # Display the training images in the visualizer.
         tf.image_summary('gray_images', gray_images)
